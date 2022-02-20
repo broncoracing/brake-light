@@ -1,0 +1,3 @@
+[submodule "firmware/brake-light"]
+	path = firmware/brake-light
+	url = git@github.com:broncoracing/brake-light.git

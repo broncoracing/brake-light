@@ -102,3 +102,11 @@ Desktop.ini
 
 # Jetbrains stuff
 **/.idea/
+
+# mbed stuff
+firmware/.mbed
+firmware/projectfiles
+firmware/mbed-os/
+firmware/BUILD
+firmware/cmake_build/
+
