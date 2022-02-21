@@ -109,4 +109,4 @@ firmware/projectfiles
 firmware/mbed-os/
 firmware/BUILD
 firmware/cmake_build/
-
+firmware/cmake-build*/
