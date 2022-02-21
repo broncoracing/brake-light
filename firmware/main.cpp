@@ -1,8 +1,3 @@
-/* mbed Microcontroller Library
- * Copyright (c) 2019 ARM Limited
- * SPDX-License-Identifier: Apache-2.0
- */
-
 #include "mbed.h"
 #include "CAN.h"
 #include "can-ids/CAN_IDS.h"
@@ -72,11 +67,11 @@ void steering_wheel_received(CANMessage& msg) {
     // Write to the servos
     if(drs){
         for(int i = 0; i < NUM_SERVOS; i++){
-//            servos[i].pulsewidth_us(servo_pos_drs[i]);
+            servos[i].pulsewidth_us(servo_pos_drs[i]);
         }
     } else {
         for(int i = 0; i < NUM_SERVOS; i++){
-//            servos[i].pulsewidth_us(servo_pos_no_drs[i]);
+            servos[i].pulsewidth_us(servo_pos_no_drs[i]);
         }
     }
 }
@@ -130,9 +125,9 @@ int main()
     printf("Entered main\n");
 
     // Initialize servos
-//    for(auto & servo : servos) {
-//        servo.period_ms(20); // Most RC servos expect a 20ms period, but this can be sped up for some servos for a faster response
-//    }
+    for(auto & servo : servos) {
+        servo.period_ms(20); // Most RC servos expect a 20ms period, but this can be sped up for some servos for a faster response
+    }
 
     // Start the event queue
     t.start(callback(&queue, &EventQueue::dispatch_forever));
