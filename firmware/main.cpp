@@ -2,23 +2,14 @@
 #include "CAN.h"
 #include "can-ids/CAN_IDS.h"
 
-// Heartbeat message rate in milliseconds
-#define HEARTBEAT_RATE     100ms
+#include "main.h"  // Settings and define's are located in main.h
 
-#define STEERING_WHEEL_DRS_BYTE 0
-#define BRAKE_PRESSURE_BYTE 0
-#define BRAKE_LIGHT_PRESSURE_CUTOFF 0x80 // TODO Set a reasonable cutoff
 
-// Uncomment to use the LED on the Nucleo dev board instead of the LED pin on the brakelight board.
-#define NUCLEO_LED
-
-#define DEFAULT_BRIGHTNESS 1.0f
-#define MIN_BRIGHTNESS 0.01f
 float brightness = DEFAULT_BRIGHTNESS;
 
 
 Ticker heartbeat;
-CAN can(PA_11, PA_12, 250000);
+CAN can(PA_11, PA_12, CAN_BAUD);
 char counter = 0;
 
 // Initialise the LEDs as a PWM output
@@ -28,16 +19,18 @@ PwmOut led(LED1); // Debug led from nucleo board
 PwmOut led(PA_8); // Transistor for brake light LED
 #endif
 
+#ifdef DRS_ENABLED
 // Initialize the servos as outputs
-#define NUM_SERVOS 2 // The configuration for the Nucleo-F445RE doesn't support PWM on pins PA2 and PA3 in MBed.
-// This can likely be fixed if we need more than 2 independent servos.
+// The configuration for the Nucleo-F445RE doesn't support PWM on pins PA2 and PA3 in MBed.
+// This is not an issue for the f412 we use on the actual board.
+#define NUM_SERVOS 2
 PwmOut servos[NUM_SERVOS] = {PwmOut(PA_0), PwmOut(PA_1)};
 
 // Servo positions when DRS is not active (positions in uS, most servos expect 1000-2000 uS range)
 int servo_pos_no_drs[NUM_SERVOS] = {1000, 1000};
 // Servo positions when DRS is active
 int servo_pos_drs[NUM_SERVOS] = {2000, 2000};
-
+#endif
 
 // Event queue for handling I/O triggered by an ISR (e.g. printing, sending CAN messages)
 EventQueue queue(32 * EVENTS_EVENT_SIZE);
@@ -65,6 +58,7 @@ void steering_wheel_received(CANMessage& msg) {
     printf("Steering wheel DRS setting: %02X\n", (unsigned int)drs);
 
     // Write to the servos
+#ifdef DRS_ENABLED
     if(drs){
         for(int i = 0; i < NUM_SERVOS; i++){
             servos[i].pulsewidth_us(servo_pos_drs[i]);
@@ -74,6 +68,7 @@ void steering_wheel_received(CANMessage& msg) {
             servos[i].pulsewidth_us(servo_pos_no_drs[i]);
         }
     }
+#endif
 }
 
 // Handle CAN frames from the brake pressure sensor
@@ -125,9 +120,11 @@ int main()
     printf("Entered main\n");
 
     // Initialize servos
+#ifdef DRS_ENABLED
     for(auto & servo : servos) {
         servo.period_ms(20); // Most RC servos expect a 20ms period, but this can be sped up for some servos for a faster response
     }
+#endif
 
     // Start the event queue
     t.start(callback(&queue, &EventQueue::dispatch_forever));
