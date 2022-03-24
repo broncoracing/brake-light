@@ -75,7 +75,7 @@ void cycle_brightness() {
     // Incrementally decrease brightness until it's below the min, then cycle back to max.
     brightness *= 0.5f;
     if(brightness < MIN_BRIGHTNESS) {
-        brightness = 1.0f;
+        brightness = DEFAULT_BRIGHTNESS;
     }
 
     // If the brake light is currently on, update its brightness.

@@ -12,9 +12,9 @@
 // Brightness settings for the brake light. 1.0f => full brightness, 0.0f => off
 
 // Default brightness for the brake light
-#define DEFAULT_BRIGHTNESS 1.0f
+#define DEFAULT_BRIGHTNESS 0.25f
 // Minimum brightness setting before cycling back to default
-#define MIN_BRIGHTNESS 0.01f
+#define MIN_BRIGHTNESS 0.005f
 
 
 // Uncomment to enable DRS servos.
