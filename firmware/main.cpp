@@ -19,18 +19,7 @@ PwmOut led(LED1); // Debug led from nucleo board
 PwmOut led(PA_8); // Transistor for brake light LED
 #endif
 
-#ifdef DRS_ENABLED
-// Initialize the servos as outputs
-// The configuration for the Nucleo-F445RE doesn't support PWM on pins PA2 and PA3 in MBed.
-// This is not an issue for the f412 we use on the actual board.
-#define NUM_SERVOS 2
-PwmOut servos[NUM_SERVOS] = {PwmOut(PA_0), PwmOut(PA_1)};
 
-// Servo positions when DRS is not active (positions in uS, most servos expect 1000-2000 uS range)
-int servo_pos_no_drs[NUM_SERVOS] = {1000, 1000};
-// Servo positions when DRS is active
-int servo_pos_drs[NUM_SERVOS] = {2000, 2000};
-#endif
 
 // Event queue for handling I/O triggered by an ISR (e.g. printing, sending CAN messages)
 EventQueue queue(32 * EVENTS_EVENT_SIZE);
@@ -73,7 +62,8 @@ void steering_wheel_received(CANMessage& msg) {
 
 // Handle CAN frames from the brake pressure sensor
 void brake_pressure_received(CANMessage& msg) {
-    unsigned char pressure = msg.data[BRAKE_PRESSURE_BYTE];
+    led.period_ms(2);
+    unsigned int pressure = (msg.data[BRAKE_PRESSURE_BYTE] << 8) + msg.data[BRAKE_PRESSURE_BYTE + 1];
     if(pressure > BRAKE_LIGHT_PRESSURE_CUTOFF) {
         led.write(brightness);
     } else {
@@ -85,7 +75,7 @@ void cycle_brightness() {
     // Incrementally decrease brightness until it's below the min, then cycle back to max.
     brightness *= 0.5f;
     if(brightness < MIN_BRIGHTNESS) {
-        brightness = 1.0f;
+        brightness = DEFAULT_BRIGHTNESS;
     }
 
     // If the brake light is currently on, update its brightness.
@@ -125,6 +115,19 @@ int main()
         servo.period_ms(20); // Most RC servos expect a 20ms period, but this can be sped up for some servos for a faster response
     }
 #endif
+
+    // Startup animation
+    for(float i = 0; i < 1; i += 0.01) {
+        led.write(i * i * DEFAULT_BRIGHTNESS);
+        ThisThread::sleep_for(20ms);
+    }
+    for(float i = 1; i > 0; i -= 0.01) {
+        led.write(i * i * DEFAULT_BRIGHTNESS);
+        ThisThread::sleep_for(20ms);
+    }
+    // Blink slowly until CAN data is received
+    led.write(0.01);
+    led.period_ms(500);
 
     // Start the event queue
     t.start(callback(&queue, &EventQueue::dispatch_forever));
