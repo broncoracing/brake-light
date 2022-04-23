@@ -7,7 +7,7 @@
 // Byte to read from brake pressure sensor CAN message for brake pressure.
 #define BRAKE_PRESSURE_BYTE 0
 // Minimum brake pressure value to turn on the brake light.
-#define BRAKE_LIGHT_PRESSURE_CUTOFF 0x80 // TODO Set a reasonable cutoff
+#define BRAKE_LIGHT_PRESSURE_CUTOFF 80 // kPa
 
 // Brightness settings for the brake light. 1.0f => full brightness, 0.0f => off
 

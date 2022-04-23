@@ -63,7 +63,7 @@ void steering_wheel_received(CANMessage& msg) {
 // Handle CAN frames from the brake pressure sensor
 void brake_pressure_received(CANMessage& msg) {
     led.period_ms(2);
-    unsigned char pressure = msg.data[BRAKE_PRESSURE_BYTE];
+    unsigned int pressure = (msg.data[BRAKE_PRESSURE_BYTE] << 8) + msg.data[BRAKE_PRESSURE_BYTE + 1];
     if(pressure > BRAKE_LIGHT_PRESSURE_CUTOFF) {
         led.write(brightness);
     } else {
@@ -118,15 +118,15 @@ int main()
 
     // Startup animation
     for(float i = 0; i < 1; i += 0.01) {
-        led.write(i * i);
+        led.write(i * i * DEFAULT_BRIGHTNESS);
         ThisThread::sleep_for(20ms);
     }
     for(float i = 1; i > 0; i -= 0.01) {
-        led.write(i * i);
+        led.write(i * i * DEFAULT_BRIGHTNESS);
         ThisThread::sleep_for(20ms);
     }
     // Blink slowly until CAN data is received
-    led.write(0.1);
+    led.write(0.01);
     led.period_ms(500);
 
     // Start the event queue
